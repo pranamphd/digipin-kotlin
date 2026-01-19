@@ -14,6 +14,8 @@ plugins {
 
     id("maven-publish")
     signing
+
+    id("org.sonarqube") version "7.2.2.6593"
 }
 
 repositories {
@@ -130,4 +132,11 @@ signing {
 tasks.withType<Jar> {
     isPreserveFileTimestamps = true
     isReproducibleFileOrder = true
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "pranamphd_digipin-kotlin")
+        property("sonar.organization", "pranamphd")
+    }
 }
