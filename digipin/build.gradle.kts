@@ -14,6 +14,7 @@ plugins {
 
     id("maven-publish")
     signing
+    id("org.cyclonedx.bom") version "3.1.0"
 }
 
 repositories {
