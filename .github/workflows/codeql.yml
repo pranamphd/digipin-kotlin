@@ -91,7 +91,7 @@ jobs:
       run: |
         ./gradlew build \
         --no-daemon \
-        --configuration-cace \
+        --configuration-cache \
         -Dorg.gradle.warning.mode=none
 
     - name: Perform CodeQL Analysis
