@@ -69,20 +69,20 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying JARs"
-          ls -lh build/libs
-          jar tf build/libs/*.jar >/dev/null
+          ls -lh lib/build/libs
+          jar tf lib/build/libs/*.jar >/dev/null
 
           echo "Verifying SBOMs"
-          ls -lh build/reports/cyclonedx
-          ls -lh build/reports/cyclonedx-direct
+          ls -lh lib/build/reports/cyclonedx
+          ls -lh lib/build/reports/cyclonedx-direct
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
         with:
           subject-path: |
-            build/libs/*.jar
-            build/reports/cyclonedx/*
-            build/reports/cyclonedx-direct/*
+            lib/build/libs/*.jar
+            lib/build/reports/cyclonedx/*
+            lib/build/reports/cyclonedx-direct/*
 
       - name: Check if GitHub release already exists
         env:
@@ -172,9 +172,9 @@ jobs:
         run: |
           set -euo pipefail
           gh release upload "$TAG" \
-            build/libs/*.jar \
-            build/reports/cyclonedx/* \
-            build/reports/cyclonedx-direct/* \
+            lib/build/libs/*.jar \
+            lib/build/reports/cyclonedx/* \
+            lib/build/reports/cyclonedx-direct/* \
             --clobber
 
       - name: Publish (dry run)
