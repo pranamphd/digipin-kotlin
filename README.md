@@ -36,6 +36,88 @@ All implementations in this repository aim to faithfully reproduce the behavior 
 
 ---
 
+## Usage
+
+> Note: Replace `<version>` with the latest published version from Maven Central.
+
+### Gradle (Kotlin DSL)
+```kotlin
+dependencies {
+    implementation("phd.pranam:digipin:<version>")
+}
+```
+
+### Gradle (Groovy DSL)
+```kotlin
+dependencies {
+    implementation("phd.pranam:digipin:<version>")
+}
+```
+
+### Maven
+
+```xml
+<dependency>
+  <groupId>phd.pranam</groupId>
+  <artifactId>digipin</artifactId>
+  <version>VERSION</version>
+</dependency>
+```
+
+
+### Kotlin
+
+```kotlin
+import phd.pranam.digipin.DigipinError
+import phd.pranam.digipin.encode
+import phd.pranam.digipin.decode
+import phd.pranam.digipin.Location
+
+fun main() {
+    val location = Location(
+        latitude = 28.622788,
+        longitude = 77.213033
+    )
+
+    try {
+        val digipin = encode(location)
+        val decoded = decode(digipin)
+        println(digipin)
+        println(decoded)
+    } catch (e: DigipinError) {
+        println("DIGIPIN error: ${e.message}")
+    }
+}
+```
+
+### Java
+
+```java
+import phd.pranam.digipin.DigipinError;
+import phd.pranam.digipin.Location;
+
+import static phd.pranam.digipin.DecodeKt.decode;
+import static phd.pranam.digipin.EncodeKt.encode;
+
+public class Example {
+    static void main() {
+        Location location = new Location(28.622788, 77.213033);
+
+        try {
+            String digipin = encode(location);
+            Location decoded = decode(digipin);
+
+            System.out.println(digipin);
+            System.out.println(decoded);
+        } catch (DigipinError e) {
+            System.out.println("DIGIPIN error: " + e.getMessage());
+        }
+    }
+}
+```
+
+---
+
 ## Status
 
 This repository is under active development.
