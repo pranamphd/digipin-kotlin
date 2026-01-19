@@ -12,5 +12,6 @@ plugins {
 
 rootProject.name = "digipin-kotlin"
 
-include("digipin")
+include("lib")
 
+project(":lib").name = "digipin"
