@@ -28,8 +28,8 @@ dependencies {
     testImplementation(kotlin("test"))
 
     // Use the JUnit 5 integration.
-    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
