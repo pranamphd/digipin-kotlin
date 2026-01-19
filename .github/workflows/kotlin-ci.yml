@@ -1,0 +1,48 @@
+name: CI — digipin-kotlin
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.kt"
+      - "**/*.kts"
+      - "gradle/**"
+      - "gradlew*"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK (LTS)
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # 5.1.0
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Build (no publish, no sonar)
+        run: |
+          ./gradlew build \
+            --configuration-cache \
+            --no-daemon
+
+      - name: Upload test reports (on failure)
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # 6.0.0
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/

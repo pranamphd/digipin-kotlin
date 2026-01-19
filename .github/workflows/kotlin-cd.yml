@@ -1,0 +1,210 @@
+name: CD — digipin-kotlin
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-digipin-kotlin-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Release and Publish
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    environment: production
+    env:
+      TEST_MODE: ${{ vars.TEST_MODE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          fetch-depth: 0
+      - name: Set derived variables
+        run: |
+          set -euo pipefail
+          echo "TAG=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+
+      - name: Set up JDK
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Validate tag matches project version
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          VERSION=$(./gradlew -q properties | grep "^version:" | awk '{print $2}')
+          if [ "v${VERSION}" != "${TAG}" ]; then
+            echo "Tag ${TAG} does not match version ${VERSION}"
+            exit 1
+          fi
+
+      - name: Build artifacts
+        run: |
+          ./gradlew build \
+            --no-daemon \
+            --configuration-cache
+
+      - name: Generate SBOM
+        run: |
+          ./gradlew cyclonedxBom \
+            --no-daemon \
+            --configuration-cache
+
+      - name: Verify publication artifacts
+        run: |
+          set -euo pipefail
+          echo "Verifying JARs"
+          ls -lh build/libs
+          jar tf build/libs/*.jar >/dev/null
+
+          echo "Verifying SBOMs"
+          ls -lh build/reports/cyclonedx
+          ls -lh build/reports/cyclonedx-direct
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
+        with:
+          subject-path: |
+            build/libs/*.jar
+            build/reports/cyclonedx/*
+            build/reports/cyclonedx-direct/*
+
+      - name: Check if GitHub release already exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+              echo "RELEASE_EXISTS=true" >> "$GITHUB_ENV"
+              IS_DRAFT=$(gh release view "$TAG" --json isDraft -q '.isDraft')
+              echo "RELEASE_IS_DRAFT=${IS_DRAFT}" >> "$GITHUB_ENV"
+              echo "Release exists (draft=${IS_DRAFT})"
+          else
+              echo "RELEASE_EXISTS=false" >> "$GITHUB_ENV"
+              echo "Release does not exist"
+          fi
+
+      - name: Abort if release already published
+        if: env.RELEASE_EXISTS == 'true' && env.RELEASE_IS_DRAFT != 'true'
+        run: |
+          echo "ERROR: Release $TAG already exists and is published."
+          echo "Refusing to modify an immutable release."
+                exit 1
+
+      - name: Detect pre-release
+        run: |
+          set -euo pipefail
+          TAG="${TAG}"
+          if [[ "$TAG" =~ -(alpha|beta|rc)\. ]]; then
+            echo "IS_PRERELEASE=true" >> "$GITHUB_ENV"
+          else
+            echo "IS_PRERELEASE=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Detect release type
+        run: |
+          set -euo pipefail
+          VERSION="${TAG#v}"
+
+          IFS='.-' read -r MAJOR MINOR PATCH REST <<< "$VERSION"
+
+          echo "MAJOR=$MAJOR" >> "$GITHUB_ENV"
+          echo "MINOR=$MINOR" >> "$GITHUB_ENV"
+          echo "PATCH=$PATCH" >> "$GITHUB_ENV"
+
+          if [[ "$PATCH" == "0" && "$MINOR" == "0" ]]; then
+            echo "RELEASE_TYPE=major" >> "$GITHUB_ENV"
+          elif [[ "$PATCH" == "0" ]]; then
+            echo "RELEASE_TYPE=minor" >> "$GITHUB_ENV"
+          else
+            echo "RELEASE_TYPE=patch" >> "$GITHUB_ENV"
+          fi
+
+      - name: Compute notes start tag
+        run: |
+          set -euo pipefail
+          case "$RELEASE_TYPE" in
+            major) echo "START_TAG=v${MAJOR}.0.0" ;;
+            minor) echo "START_TAG=v${MAJOR}.${MINOR}.0" ;;
+            patch)
+            if [[ "$PATCH" -gt 0 ]]; then
+              echo "START_TAG=v${MAJOR}.${MINOR}.$((PATCH-1))"
+            fi
+          ;;
+          esac >> "$GITHUB_ENV"
+
+      - name: Create GitHub release
+        if: env.RELEASE_EXISTS != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          PRERELEASE_FLAG=""
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
+          gh release create "$TAG" \
+            --draft \
+            $PRERELEASE_FLAG \
+            --generate-notes \
+            --title "$TAG" \
+            ${START_TAG:+--notes-start-tag "$START_TAG"}
+
+      - name: Upload release assets
+        if: env.TEST_MODE != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release upload "$TAG" \
+            build/libs/*.jar \
+            build/reports/cyclonedx/* \
+            build/reports/cyclonedx-direct/* \
+            --clobber
+
+      - name: Publish (dry run)
+        if: env.TEST_MODE == 'true'
+        run: |
+          ./gradlew publishToMavenLocal \
+            --no-daemon \
+            --configuration-cache
+
+      - name: Verify Maven publication
+        run: |
+          ./gradlew publishToMavenLocal \
+            --no-daemon \
+            --configuration-cache
+          ls ~/.m2/repository | head
+
+      - name: Publish to Maven Central
+        if: env.TEST_MODE != 'true'
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}
+        run: |
+          ./gradlew publish \
+            --no-daemon \
+            --configuration-cache
+
+      - name: Publish GitHub release
+        if: env.TEST_MODE != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit ${TAG} --draft=false
