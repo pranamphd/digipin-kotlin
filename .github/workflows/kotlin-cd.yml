@@ -80,16 +80,16 @@ jobs:
         run: |
           set -euo pipefail
           cp lib/build/reports/cyclonedx/bom.json \
-            digipin-${TAG}-cyclonedx.json
+            digipin-${TAG}-cyclonedx-bom.json
 
           cp lib/build/reports/cyclonedx/bom.xml \
-            digipin-${TAG}-cyclonedx.xml
+            digipin-${TAG}-cyclonedx-bom.xml
 
           cp lib/build/reports/cyclonedx-direct/bom.json \
-            digipin-${TAG}-cyclonedx-direct.json
+            digipin-${TAG}-cyclonedx-direct-bom.json
 
           cp lib/build/reports/cyclonedx-direct/bom.xml \
-            digipin-${TAG}-cyclonedx-direct.xml
+            digipin-${TAG}-cyclonedx-direct-bom.xml
 
       - name: Verify publication artifacts
         run: |
@@ -204,10 +204,10 @@ jobs:
           set -euo pipefail
           gh release upload "$TAG" \
             lib/build/libs/*.jar \
-            digipin-${TAG}-cyclonedx.json \
-            digipin-${TAG}-cyclonedx.xml \
-            digipin-${TAG}-cyclonedx-direct.json \
-            digipin-${TAG}-cyclonedx-direct.xml \
+            digipin-${TAG}-cyclonedx-bom.json \
+            digipin-${TAG}-cyclonedx-bom.xml \
+            digipin-${TAG}-cyclonedx-direct-bom.json \
+            digipin-${TAG}-cyclonedx-direct-bom.xml \
             --clobber
 
       - name: Publish (dry run)
