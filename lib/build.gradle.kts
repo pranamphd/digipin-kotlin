@@ -133,7 +133,7 @@ signing {
         )
     }
 
-    useGpgCmd()
+//    useGpgCmd()
     sign(publishing.publications)
 }
 
