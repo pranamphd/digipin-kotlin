@@ -76,6 +76,23 @@ jobs:
             --no-daemon \
             --configuration-cache
 
+      - name: Prepare SBOM release assets
+        run: |
+          set -euo pipefail
+          VERSION="${TAG#v}"
+
+          cp lib/build/reports/cyclonedx/bom.json \
+            digipin-${VERSION}-cyclonedx.json
+
+          cp lib/build/reports/cyclonedx/bom.xml \
+            digipin-${VERSION}-cyclonedx.xml
+
+          cp lib/build/reports/cyclonedx-direct/bom.json \
+            digipin-${VERSION}-cyclonedx-direct.json
+
+          cp lib/build/reports/cyclonedx-direct/bom.xml \
+            digipin-${VERSION}-cyclonedx-direct.xml
+
       - name: Verify publication artifacts
         run: |
           set -euo pipefail
@@ -177,15 +194,13 @@ jobs:
             ${START_TAG:+--notes-start-tag "$START_TAG"}
 
       - name: Upload release assets
-        if: env.TEST_MODE != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
           gh release upload "$TAG" \
             lib/build/libs/*.jar \
-            lib/build/reports/cyclonedx/* \
-            lib/build/reports/cyclonedx-direct/* \
+            digipin-${VERSION}-cyclonedx.json \
+            digipin-${VERSION}-cyclonedx.xml \
+            digipin-${VERSION}-cyclonedx-direct.json \
+            digipin-${VERSION}-cyclonedx-direct.xml \
             --clobber
 
       - name: Publish (dry run)
