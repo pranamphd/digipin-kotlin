@@ -199,7 +199,11 @@ jobs:
             $NOTES_START_FLAG
 
       - name: Upload release assets
+        if: env.TEST_MODE != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           gh release upload "$TAG" \
             lib/build/libs/*.jar \
             digipin-${VERSION}-cyclonedx.json \
