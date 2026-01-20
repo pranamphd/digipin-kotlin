@@ -79,19 +79,17 @@ jobs:
       - name: Prepare SBOM release assets
         run: |
           set -euo pipefail
-          VERSION="${TAG#v}"
-
           cp lib/build/reports/cyclonedx/bom.json \
-            digipin-${VERSION}-cyclonedx.json
+            digipin-${TAG}-cyclonedx.json
 
           cp lib/build/reports/cyclonedx/bom.xml \
-            digipin-${VERSION}-cyclonedx.xml
+            digipin-${TAG}-cyclonedx.xml
 
           cp lib/build/reports/cyclonedx-direct/bom.json \
-            digipin-${VERSION}-cyclonedx-direct.json
+            digipin-${TAG}-cyclonedx-direct.json
 
           cp lib/build/reports/cyclonedx-direct/bom.xml \
-            digipin-${VERSION}-cyclonedx-direct.xml
+            digipin-${TAG}-cyclonedx-direct.xml
 
       - name: Verify publication artifacts
         run: |
@@ -132,7 +130,7 @@ jobs:
         run: |
           echo "ERROR: Release $TAG already exists and is published."
           echo "Refusing to modify an immutable release."
-                exit 1
+          exit 1
 
       - name: Detect pre-release
         run: |
@@ -206,10 +204,10 @@ jobs:
           set -euo pipefail
           gh release upload "$TAG" \
             lib/build/libs/*.jar \
-            digipin-${VERSION}-cyclonedx.json \
-            digipin-${VERSION}-cyclonedx.xml \
-            digipin-${VERSION}-cyclonedx-direct.json \
-            digipin-${VERSION}-cyclonedx-direct.xml \
+            digipin-${TAG}-cyclonedx.json \
+            digipin-${TAG}-cyclonedx.xml \
+            digipin-${TAG}-cyclonedx-direct.json \
+            digipin-${TAG}-cyclonedx-direct.xml \
             --clobber
 
       - name: Publish (dry run)
