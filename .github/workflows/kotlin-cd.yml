@@ -138,7 +138,7 @@ jobs:
         run: |
           set -euo pipefail
           TAG="${TAG}"
-          if [[ "$TAG" =~ -(alpha|beta|rc)\. ]]; then
+          if [[ "$TAG" =~ -(alpha|beta|rc) ]]; then
             echo "IS_PRERELEASE=true" >> "$GITHUB_ENV"
           else
             echo "IS_PRERELEASE=false" >> "$GITHUB_ENV"
@@ -183,15 +183,20 @@ jobs:
         run: |
           set -euo pipefail
           PRERELEASE_FLAG=""
+          NOTES_START_FLAG=""
+
           if [[ "$IS_PRERELEASE" == "true" ]]; then
             PRERELEASE_FLAG="--prerelease"
+          else
+            NOTES_START_FLAG="${START_TAG:+--notes-start-tag "$START_TAG"}"
           fi
+
           gh release create "$TAG" \
             --draft \
             $PRERELEASE_FLAG \
             --generate-notes \
             --title "$TAG" \
-            ${START_TAG:+--notes-start-tag "$START_TAG"}
+            $NOTES_START_FLAG
 
       - name: Upload release assets
         run: |
