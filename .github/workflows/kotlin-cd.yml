@@ -40,6 +40,13 @@ jobs:
           set -euo pipefail
           echo "TAG=${GITHUB_REF_NAME}" >> $GITHUB_ENV
 
+      - name: Check secrets presence
+        run: |
+          echo "GPG_PRIVATE_KEY present: ${GPG_PRIVATE_KEY:+yes}"
+          echo "GPG_PRIVATE_KEY_PASSWORD present: ${GPG_PRIVATE_KEY_PASSWORD:+yes}"
+          echo "CENTRAL_USERNAME present: ${CENTRAL_USERNAME:+yes}"
+          echo "CENTRAL_PASSWORD present: ${CENTRAL_PASSWORD:+yes}"
+
       - name: Set up JDK
         uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e
         with:
