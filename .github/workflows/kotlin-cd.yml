@@ -179,6 +179,11 @@ jobs:
 
       - name: Publish (dry run)
         if: env.TEST_MODE == 'true'
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}
         run: |
           ./gradlew publishToMavenLocal \
             --no-daemon \
