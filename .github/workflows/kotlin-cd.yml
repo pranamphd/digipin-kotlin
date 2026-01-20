@@ -162,16 +162,17 @@ jobs:
           fi
 
       - name: Compute notes start tag
+        if: env.IS_PRERELEASE != 'true'
         run: |
           set -euo pipefail
           case "$RELEASE_TYPE" in
             major) echo "START_TAG=v${MAJOR}.0.0" ;;
             minor) echo "START_TAG=v${MAJOR}.${MINOR}.0" ;;
             patch)
-            if [[ "$PATCH" -gt 0 ]]; then
-              echo "START_TAG=v${MAJOR}.${MINOR}.$((PATCH-1))"
-            fi
-          ;;
+              if [[ "$PATCH" -gt 0 ]]; then
+                echo "START_TAG=v${MAJOR}.${MINOR}.$((PATCH-1))"
+              fi
+            ;;
           esac >> "$GITHUB_ENV"
 
       - name: Create GitHub release
