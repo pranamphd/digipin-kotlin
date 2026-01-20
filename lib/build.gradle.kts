@@ -120,11 +120,20 @@ publishing {
     }
 }
 
+val signingRequired = providers.environmentVariable("GPG_PRIVATE_KEY")
+    .zip(providers.environmentVariable("GPG_PRIVATE_KEY_PASSWORD")) { _, _ -> true }.orElse(false)
+
 signing {
-    useInMemoryPgpKeys(
-        System.getenv("GPG_PRIVATE_KEY"),
-        System.getenv("GPG_PRIVATE_KEY_PASSWORD")
-    )
+    isRequired = signingRequired.get()
+
+    if (isRequired) {
+        useInMemoryPgpKeys(
+            providers.environmentVariable("GPG_PRIVATE_KEY").get(),
+            providers.environmentVariable("GPG_PRIVATE_KEY_PASSWORD").get()
+        )
+    }
+
+    useGpgCmd()
     sign(publishing.publications)
 }
 
