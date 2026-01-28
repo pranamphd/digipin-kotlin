@@ -26,10 +26,10 @@ jobs:
     environment: production
     env:
       TEST_MODE: ${{ vars.TEST_MODE }}
-      CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
-      CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
-      GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-      GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}
+      ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.CENTRAL_USERNAME }}
+      ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.CENTRAL_PASSWORD }}
+      ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
+      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
