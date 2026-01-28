@@ -64,7 +64,7 @@ tasks.named<Test>("test") {
 
 mavenPublishing {
     signAllPublications()
-    publishToMavenCentral()
+    publishToMavenCentral(automaticRelease = true)
 
     coordinates(group.toString(), name.toString(), version.toString())
 
