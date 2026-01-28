@@ -12,9 +12,9 @@ plugins {
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 
-    id("maven-publish")
     signing
     id("org.cyclonedx.bom") version "3.1.0"
+    id("com.vanniktech.maven.publish") version "0.36.0"
 }
 
 repositories {
@@ -40,8 +40,6 @@ java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 
-    withJavadocJar()
-    withSourcesJar()
 }
 
 // Apply a specific Kotlin toolchain to ease working on different environments.
@@ -64,58 +62,41 @@ tasks.named<Test>("test") {
     useJUnitPlatform()
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
+mavenPublishing {
+    signAllPublications()
+    publishToMavenCentral()
 
-            groupId = "phd.pranam"
-            artifactId = "digipin"
-            version = project.version.toString()
+    coordinates(group.toString(), name.toString(), version.toString())
 
-            pom {
-                name.set("digipin")
-                description.set("Kotlin library for encoding and decoding DIGIPIN (Digital Postal Index Number)")
-                url.set("https://github.com/pranamphd/digipin-kotlin")
+    pom {
+        name.set("digipin")
+        description.set("Kotlin library for encoding and decoding DIGIPIN (Digital Postal Index Number)")
+        url.set("https://github.com/pranamphd/digipin-kotlin")
 
-                licenses {
-                    license {
-                        name.set("Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0")
-                    }
-                }
-
-                developers {
-                    developer {
-                        id.set("pranamphd")
-                        name.set("Pranam")
-                        email.set("pranam@pranam.phd")
-
-                        organization.set("Pranam")
-                        organizationUrl.set("https://orcid.org/0009-0007-9316-3616")
-                    }
-                }
-
-
-
-                scm {
-                    url.set("https://github.com/pranamphd/digipin-kotlin")
-                    connection.set("scm:git:https://github.com/pranamphd/digipin-kotlin.git")
-                    developerConnection.set("scm:git:ssh://git@github.com:pranamphd/digipin-kotlin.git")
-                }
+        licenses {
+            license {
+                name.set("Apache License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0")
             }
         }
-    }
 
-    repositories {
-        maven {
-            name = "Central"
-            url = uri("https://central.sonatype.com/api/v1/publisher/upload")
+        developers {
+            developer {
+                id.set("pranamphd")
+                name.set("Pranam")
+                email.set("pranam@pranam.phd")
 
-            credentials {
-                username = System.getenv("CENTRAL_USERNAME")
-                password = System.getenv("CENTRAL_PASSWORD")
+                organization.set("Pranam")
+                organizationUrl.set("https://orcid.org/0009-0007-9316-3616")
             }
+        }
+
+
+
+        scm {
+            url.set("https://github.com/pranamphd/digipin-kotlin")
+            connection.set("scm:git:https://github.com/pranamphd/digipin-kotlin.git")
+            developerConnection.set("scm:git:ssh://git@github.com:pranamphd/digipin-kotlin.git")
         }
     }
 }
