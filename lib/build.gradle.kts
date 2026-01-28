@@ -110,7 +110,7 @@ publishing {
     repositories {
         maven {
             name = "Central"
-            url = uri("https://central.sonatype.com/api/v1/publisher")
+            url = uri("https://central.sonatype.com/api/v1/publisher/upload")
 
             credentials {
                 username = System.getenv("CENTRAL_USERNAME")
