@@ -13,7 +13,7 @@ plugins {
     `java-library`
 
     signing
-    id("org.cyclonedx.bom") version "3.1.0"
+    id("org.cyclonedx.bom") version "3.2.0"
     id("com.vanniktech.maven.publish") version "0.36.0"
 }
 
