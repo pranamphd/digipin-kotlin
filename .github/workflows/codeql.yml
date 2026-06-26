@@ -95,6 +95,6 @@ jobs:
         -Dorg.gradle.warning.mode=none
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # 4.31.10
+      uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # 4.36.2
       with:
         category: "/language:${{matrix.language}}"
